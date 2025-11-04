@@ -135,6 +135,7 @@ Thumbs.db
 data/raw/
 models/  
 data/processed/
+data
 
 # Temporary files
 *.tmp
