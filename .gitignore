@@ -132,10 +132,7 @@ Thumbs.db
 
 # Data and models (customize as needed)
 # Uncomment the following if you want to ignore raw data
-data/raw/
 models/  
-data/processed/
-data
 
 # Temporary files
 *.tmp
