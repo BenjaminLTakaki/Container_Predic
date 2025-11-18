@@ -1,6 +1,6 @@
 # Model Comparison Guide - Complete Analysis
 
-This guide provides a comprehensive comparison of all models tested across both notebooks for predicting container freight price fluctuations.
+This guide provides a comprehensive comparison of all models tested for predicting container freight price fluctuations across different time horizons.
 
 ---
 
@@ -17,15 +17,9 @@ This guide provides a comprehensive comparison of all models tested across both 
 
 ## Model Performance Summary
 
-### Notebook 10: Lagged Features Only
+### Notebook 11: Weekly Fluctuation Prediction (with Seasonal Features)
 
-| Model | RMSE | MAE | R² | Direction Acc | Training Time | Complexity |
-|-------|------|-----|----|--------------:|---------------|------------|
-| **Linear Regression** | **$196.16** | **$140.83** | **0.176** | **64.94%** | Fast (1s) | Low |
-| Decision Tree | $339.87 | $251.45 | -1.474 ❌ | 58.44% | Medium (5s) | Medium |
-| KNN | $210.39 | $151.01 | 0.052 | 63.64% | Fast (1s) | Low |
-
-### Notebook 11: Seasonal Features Added
+**Prediction Horizon:** 1 week ahead
 
 | Model | RMSE | MAE | R² | Direction Acc | Training Time | Complexity |
 |-------|------|-----|----|--------------:|---------------|------------|
@@ -33,19 +27,39 @@ This guide provides a comprehensive comparison of all models tested across both 
 | Decision Tree | $224.83 | $164.84 | -0.083 ❌ | 61.04% | Medium (6s) | Medium |
 | KNN | $186.90 | $138.05 | 0.252 | 63.64% | Fast (1s) | Low |
 
+### Notebook 12: Monthly Fluctuation Prediction
+
+**Prediction Horizon:** 4 weeks (1 month) ahead
+
+| Model | RMSE | MAE | R² | Direction Acc | Training Time | Complexity |
+|-------|------|-----|----|--------------:|---------------|------------|
+| **Linear Regression** | **TBD** | **TBD** | **TBD** | **TBD** | Fast (1s) | Low |
+| Decision Tree | TBD | TBD | TBD | TBD | Medium (6s) | Medium |
+| KNN | TBD | TBD | TBD | TBD | Fast (1s) | Low |
+
+*Note: Run Notebook 12 to populate monthly prediction results*
+
 ### Key Observations:
 
-✅ **Linear Regression improved the most** with seasonal features:
-- RMSE: $196.16 → $181.76 (7.3% improvement)
-- R²: 0.176 → 0.293 (66% improvement)
+✅ **Linear Regression is the best performer** for weekly fluctuations:
+- RMSE: $181.76
+- R²: 0.293 (explains 29% of variance)
+- Direction Accuracy: 64.94% (better than random 50%)
 
-✅ **KNN also improved significantly**:
-- RMSE: $210.39 → $186.90 (11.2% improvement)
-- R²: 0.052 → 0.252 (384% improvement!)
+✅ **KNN performs reasonably well**:
+- RMSE: $186.90
+- R²: 0.252
+- Benefits from seasonal similarity matching
 
-❌ **Decision Tree failed in both notebooks**:
+❌ **Decision Tree overfits**:
 - Negative R² means worse than predicting average
 - Overfitting despite GridSearchCV tuning
+- Not recommended for production use
+
+📊 **Weekly vs Monthly Comparison**:
+- Monthly predictions expected to have higher RMSE (longer horizon = more uncertainty)
+- Performance degradation indicates price volatility vs contract stickiness
+- See `WEEKLY_VS_MONTHLY_FLUCTUATION_COMPARISON.md` for detailed analysis
 
 ---
 
@@ -360,36 +374,46 @@ Precision (UP):   19/37 = 51.4%
 
 ## Feature Comparison
 
-### Notebook 10 Features (30 total)
+### Notebook 11 Features (Weekly Fluctuations - 23 total)
+
+**Focus:** Seasonal patterns and holidays
 
 **Feature Types:**
-- **Price lags**: price_lag_1w, price_lag_2w, ..., price_lag_8w
-- **Price changes**: price_lag_1w_pct_change_1w, price_lag_1w_pct_change_4w
-- **Rolling statistics**: price_lag_1w_roll_mean_4w, price_lag_1w_roll_std_4w
-- **Port activity**: sh_import_general_cargo_lag_1w
-- **Chokepoint data**: Various shipping chokepoint features
-
-**Most important:**
-1. price_lag_1w_pct_change_1w (0.42 correlation)
-2. price_lag_1w_pct_change_4w (0.35 correlation)
-
----
-
-### Notebook 11 Features (23 total)
-
-**Feature Types:**
-- **Seasonal (16)**: christmas_period, chinese_new_year_period, q1-q4, month_sin/cos, week_of_year
+- **Seasonal (16)**: christmas_period, chinese_new_year_period, golden_week_china, thanksgiving_period, may_day_period, mid_autumn_period, peak_shipping_season, low_shipping_season, q1-q4, month_sin/cos, week_of_year, month
 - **Price lags (3)**: price_lag_1w, price_lag_2w, price_lag_4w
 - **Rolling stats (4)**: price_lag_1w_roll_mean_4w/8w, price_lag_1w_roll_std_4w/8w
 
-**Key differences:**
-- **Fewer features** (23 vs 30) but more targeted
-- **Seasonal features** add new signal
-- **Simpler feature set** (less overfitting risk)
+**Most important features:**
+1. Price lags (strong autocorrelation)
+2. Seasonal indicators (month_sin, week_of_year, quarters)
+3. Holiday periods (christmas_period, peak_shipping_season)
 
-**Most important:**
-- Price lags still dominate
-- But seasonal features appear in top 10 (month_sin, week_of_year, q1-q4)
+**Best for:**
+- Short-term operational planning
+- Understanding seasonal volatility
+- Predicting holiday impacts
+
+---
+
+### Notebook 12 Features (Monthly Fluctuations - 30 total)
+
+**Focus:** Lagged price features and rolling statistics
+
+**Feature Types:**
+- **Price lags**: price_lag_1w, price_lag_2w, price_lag_3w, price_lag_4w, etc.
+- **Price changes**: price_lag_1w_pct_change_1w, price_lag_1w_pct_change_4w
+- **Rolling statistics**: price_lag_1w_roll_mean_4w, price_lag_1w_roll_std_4w, price_lag_1w_roll_min_4w, price_lag_1w_roll_max_4w
+- **Other lagged features**: Port activity, chokepoint data, crisis indicators
+
+**Most important features:**
+- Likely price_lag_1w (high autocorrelation)
+- Rolling windows (capture volatility)
+- Percentage changes (momentum)
+
+**Best for:**
+- Strategic contract planning
+- Budget forecasting
+- Understanding longer-term trends
 
 ---
 
@@ -425,9 +449,10 @@ Precision (UP):   19/37 = 51.4%
 
 ### For Production Use:
 
-🥇 **Primary Model: Linear Regression with Seasonal Features**
+🥇 **Weekly Predictions: Linear Regression with Seasonal Features (Notebook 11)**
 - Best RMSE: $181.76
 - Best R²: 0.293
+- Direction Accuracy: 64.94%
 - Fast, interpretable, reliable
 - Use confidence intervals: ±$182 margin of error
 
@@ -444,6 +469,11 @@ prediction = model.predict(X_test_seasonal)
 lower_bound = prediction - 181.76
 upper_bound = prediction + 181.76
 ```
+
+🥈 **Monthly Predictions: Linear Regression with Lagged Features (Notebook 12)**
+- Expected higher RMSE (longer horizon)
+- Use for strategic planning
+- Combine with weekly predictions for comprehensive view
 
 ---
 
@@ -549,6 +579,11 @@ ensemble_pred = 0.7 * lr_pred + 0.3 * knn_pred
 
 ---
 
-**Document Version:** 1.0
+**Document Version:** 2.0
 **Last Updated:** 2025-11-18
-**Related Files:** NOTEBOOK_10_RESULTS_EXPLANATION.md, NOTEBOOK_11_RESULTS_EXPLANATION.md, MODEL_INSIGHTS_SUMMARY.md
+**Related Files:**
+- `NOTEBOOK_11_RESULTS_EXPLANATION.md` - Detailed weekly fluctuation results
+- `WEEKLY_VS_MONTHLY_FLUCTUATION_COMPARISON.md` - Comparison of prediction horizons
+- `MODEL_INSIGHTS_SUMMARY.md` - High-level insights across all models
+- Notebook 11: `11_seasonality_price_fluctuation_models.ipynb`
+- Notebook 12: `12_monthly_price_fluctuation_models.ipynb`

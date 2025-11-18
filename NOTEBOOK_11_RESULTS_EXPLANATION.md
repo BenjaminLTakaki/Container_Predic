@@ -6,14 +6,17 @@ This document explains what **Notebook 11** (`11_seasonality_price_fluctuation_m
 
 ## What Does Notebook 11 Do?
 
-This notebook **builds on Notebook 10** by adding **seasonal features** to predict weekly price fluctuations. It answers the question:
+This notebook predicts **weekly price fluctuations** using **seasonal features** to capture holiday and seasonal pattern effects. It answers the question:
 
 **"Do holidays and seasonal patterns affect container freight price volatility?"**
 
 ### Key Innovation:
+- Predicts weekly price fluctuations (1-week ahead)
 - Adds 16 seasonal features (holidays, quarters, cyclical month encoding)
 - Identifies which seasonal periods cause the most price volatility
-- Tests same 3 models with enhanced feature set
+- Tests 3 models: Linear Regression, Decision Tree, KNN with enhanced feature set
+
+**Note**: For monthly (4-week ahead) fluctuation predictions, see **Notebook 12**. For a comparison of weekly vs monthly predictions, see `WEEKLY_VS_MONTHLY_FLUCTUATION_COMPARISON.md`.
 
 ---
 
@@ -112,15 +115,6 @@ golden_week_china                       -$42.60            -$45.82            10
 
 ## Model Performance Results
 
-### Comparison with Notebook 10:
-
-| Metric | Notebook 10 (No Seasonality) | Notebook 11 (With Seasonality) | Improvement |
-|--------|------------------------------|--------------------------------|-------------|
-| **RMSE** | $196.16 | **$181.76** | **-7.3%** ✅ |
-| **MAE** | $140.83 | **$136.47** | **-3.1%** ✅ |
-| **R²** | 0.176 | **0.293** | **+66%** ✅ |
-| **Direction Accuracy** | 64.94% | **64.94%** | No change |
-
 ### Results from Execution:
 
 ```
@@ -134,21 +128,25 @@ K-Nearest Neighbors     $186.90    $138.05          88.85%     0.252            
 
 ## What Do These Results Mean?
 
-### 🏆 Winner: Still **Linear Regression**
+### 🏆 Winner: **Linear Regression**
 
-**But now it's MUCH better:**
-- **R² improved from 0.176 → 0.293** (explains 66% MORE variance!)
-- **RMSE improved $196 → $182** (predictions more accurate)
+**Performance:**
+- **R² = 0.293** (explains 29% of weekly fluctuation variance)
+- **RMSE = $181.76** (average prediction error)
+- **Direction Accuracy = 64.94%** (better than random guessing at 50%)
 - Seasonal features add real predictive power
 
 ### Key Findings:
 
-1. **Seasonality Matters**: 7% RMSE improvement proves seasonal patterns affect prices
+1. **Seasonality Matters**: Seasonal patterns significantly affect price fluctuations
+   - Christmas period: +$133 higher volatility
+   - Peak shipping season: -$93 lower volatility (more stable)
 
-2. **R² Still Low (0.293)**: Even with seasonality, model only explains 29% of fluctuations
-   - 71% still unexplained (external shocks, news, oil prices, etc.)
+2. **R² = 0.293**: Model explains 29% of weekly fluctuations
+   - 71% still unexplained (external shocks, news, oil prices, geopolitical events)
+   - This is reasonable for short-term price movements
 
-3. **Decision Tree Still Overfits**: Negative R² even with more features
+3. **Decision Tree Overfits**: Negative R² indicates poor generalization
 
 ---
 
@@ -297,8 +295,8 @@ This is **accurate** because it compares actual average fluctuations during vs o
 ### ✅ What We Learned:
 
 1. **Seasonality SIGNIFICANTLY affects price fluctuations**
-   - 7% RMSE improvement
-   - 66% more variance explained (R²)
+   - Seasonal patterns explain meaningful variance
+   - R² of 0.293 shows moderate predictive power
 
 2. **Christmas = Highest Volatility**
    - +$133 more volatile than normal
@@ -308,9 +306,10 @@ This is **accurate** because it compares actual average fluctuations during vs o
    - Paradoxically, high-volume period is predictable
    - Best time for price forecasting
 
-4. **Seasonal features improve Linear Regression**
-   - From R² 0.176 → 0.293
-   - Still only explains 29% of fluctuations
+4. **Seasonal features provide valuable insights**
+   - Linear Regression achieves R² = 0.293
+   - Direction accuracy of 64.94% aids decision-making
+   - Identifies when to expect price stability vs volatility
 
 ### ⚠️ Limitations:
 
@@ -320,27 +319,31 @@ This is **accurate** because it compares actual average fluctuations during vs o
 
 ### 🎯 Best Practices:
 
-1. **Use seasonality-aware model** for better predictions
+1. **Use seasonality-aware model** for weekly fluctuation predictions
 2. **Avoid spot market during Christmas period** (too volatile)
 3. **Lock in rates during peak season** (Aug-Oct) when stable
 4. **Expect stabilization during CNY** despite shutdowns
 
 ---
 
-## Comparison with Notebook 10
+## Comparison with Monthly Predictions
 
-| Aspect | Notebook 10 | Notebook 11 |
-|--------|-------------|-------------|
-| Features | 30 lagged price features | 23 features (16 seasonal + 7 price) |
-| Best R² | 0.176 | **0.293** ✅ |
-| Best RMSE | $196.16 | **$181.76** ✅ |
-| Top Insight | Recent momentum matters | **Seasonality matters more** |
-| Use Case | General forecasting | **Seasonality-aware forecasting** |
+| Aspect | Notebook 11 (Weekly) | Notebook 12 (Monthly) |
+|--------|---------------------|----------------------|
+| **Prediction Horizon** | 1 week ahead | 4 weeks ahead |
+| **Target** | Weekly fluctuations | Monthly fluctuations |
+| **Features** | 16 seasonal + 7 price features | 30 lagged price features |
+| **Expected Difficulty** | Easier (shorter horizon) | Harder (longer horizon) |
+| **Use Case** | Short-term operational planning | Contract negotiation, budgeting |
 
-**Recommendation**: Use Notebook 11's approach for production - seasonality adds real value!
+**Recommendation**: Use Notebook 11 for short-term decisions and Notebook 12 for strategic planning!
+
+For detailed comparison, see `WEEKLY_VS_MONTHLY_FLUCTUATION_COMPARISON.md`.
 
 ---
 
 ## Next Steps
 
-See `MODEL_COMPARISON_GUIDE.md` for detailed comparison of all models across both notebooks and recommendations for further improvements.
+- **For monthly predictions**: See Notebook 12 (`12_monthly_price_fluctuation_models.ipynb`)
+- **For weekly vs monthly comparison**: See `WEEKLY_VS_MONTHLY_FLUCTUATION_COMPARISON.md`
+- **For all model comparisons**: See `MODEL_COMPARISON_GUIDE.md`
